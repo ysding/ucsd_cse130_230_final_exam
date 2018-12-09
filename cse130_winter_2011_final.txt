@@ -1,0 +1,174 @@
+(*  1.  *)
+(* defind a binary search tree dict then find the value by key *)
+type 'a dict = Empty | Node of string * 'a * 'a dict * 'a dict;;
+let fruitd = 
+	Node ( "grape", 2.65,
+		Node( "banana", 1.50,
+			Node("apple", 2.25, Empty, Empty),
+			Node("cherry", 2.75, Empty, Empty)),
+		Node ("orange", 0.75,
+			Node("kiwi", 3.99, Empty, Empty),
+			Node("peach", 1.99, Empty, Empty)));;
+
+(* # kiwi, my friend's weichat's name *) 
+
+(*  1.a  *)
+(*  find the value in d by k*)
+let rec find d k = match d with 
+				| Empty -> raise Not_found
+				| Node(k', v', l, r) -> 
+					if k = k' then v' else
+					if k < k' then (find l k) else
+					find r k;;
+
+find fruitd "cherry";;
+					
+(*  1.b  *)
+(*  update k with v in d or add (k, v) in d*)
+let rec add d k v = 
+	match d with
+	| Empty -> Node(k, v, Empty, Empty)
+	| Node(k', v', l, r) ->
+		if k = k' then Node(k', v, l, r) else
+		if k < k' then Node(k', v', add l k v, r) else
+		Node(k', v', l, add r k v);;
+
+let d0 = fruitd in 
+let d1 = add d0 "banana" 5.0 in
+let d2 = add d1 "mango" 10.25 in 
+(find d2 "banana", find d2 "mango", find d2 "cherry")
+
+(*ans: (5., 10.25, 2.75) *)
+
+(*  1.c  *)
+(*  apply f function to d with initial value b*)
+let rec fold f b d = 
+	match d with 
+	| Empty -> b
+	| Node(k, v, l, r) ->
+		let b0 = fold f b l in
+		let b1 = f k v b0 in 
+		fold f b1 r;;
+		
+(* error in examination paper: using + and 0 instead of +. and 0.*)
+(* below will sum all value in tree.*)
+fold (fun k v b -> b +. v) 0. fruitd;;
+
+
+
+# 3. python3 problem
+
+# decorator to print the first k value and return. 
+# k start from [1, k]
+def print_first_k_args(k):
+	class deco:
+		def __init__(self, f):
+			self.f = f
+		def __call__(self, *args):
+			for i in range(min(len(args), k)):
+				print("Arg %d: %s" % (i+1, str(args[i])))
+			res = self.f(*args)
+			print("Return: %s" % str(res))
+			return res
+	return deco
+	
+@print_first_k_args(1)
+def sum(a, b): return a + b	
+
+@print_first_k_args(5)
+def fac(n):
+	if n <= 0: return 1
+	else: return n*fac(n-1)
+	
+fac(3)
+""" ipython ans.
+Arg 1: 3
+Arg 1: 2
+Arg 1: 1
+Arg 1: 0
+Return: 1
+Return: 1
+Return: 2
+Return: 6
+Out[15]: 6
+"""
+
+# 4 basic manipulations of images.
+# 4.a
+def create_image(w, h, c):
+	# create_image(3,2,27) should return [[27,27,27],[27,27,27]]
+	return [[c for col in range(w)] for row in range(h)]
+	
+create_image(3, 2, 27)
+
+# 4.b
+# well_formed check the len of each row and the value's range [0, 255]
+def well_formed(img):
+	if not img or len(img) == 0:
+		return True # seems we don't need to worry about this situation.
+	length = len(img[0])
+	for row in img:
+		if len(row) != length:
+			return False
+		for v in row:
+			if not(0<= v <= 255):
+				return False
+	return True
+
+# 4.c
+# fill_rect without test cases.
+# fill the area [x0, min(x1, w)), [y0, min(y1, h)).
+def fill_rect(img, x0, y0, x1, y1, c):
+	h, w = len(img), len(img[0])
+	for y in range(y0, min(h, y1)):
+		for x in range(x0, min(w, x1)):
+			img[y][x] = c
+
+# 4.d
+# fill_region without test cases.
+# fill the contiguous region that have the some color.
+def fill_region(img, oldcolor, newcolor, x, y, c):
+	img[x][y] = newcolor
+	for (x1, y1) in [(x+1, y), (x-1, y), (x, y-1), (x, y+1)]:
+		try:
+			if img[x1][y1] == oldcolor: 
+				fill_region(img, oldcolor, newcolor, x1, y1)
+		except:
+			pass # this seems not a good manner
+
+			
+			
+%% 5 prolog
+%% 5.a
+sat(var(X)) :- X = 1.
+sat(not(var(X))) :- X = 0.
+sat(and([])).
+%% Fill in the other cases for ''and'':
+sat(and([X | Tail])) :- sat(X), sat(and(Tail)).
+
+sat(or([])) :- fail.
+%% Fill in the other cases for ''or'':
+sat(or([X | Tail])) :- sat(X).
+sat(or([_ | Tail])) :- sat(or(Tail)).
+
+%% test case.
+sat(or( [and([var(A), var(B)]), and([not(var(A)), not(var(B))]) ] )).
+
+sat(or([var(A),var(B)])).
+
+
+%% 5.b
+bool(X) :- X = 0.
+bool(X) :- X = 1.
+bools([]).
+bools([X | Tail]) :- bool(X), bools(Tail).
+
+%% 5.c
+allsat(L, S) :- bools(L), sat(S).
+
+%% testcase
+allsat([A, B], or([var(A), var(B)])).
+
+
+
+					

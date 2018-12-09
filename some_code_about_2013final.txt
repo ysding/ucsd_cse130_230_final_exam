@@ -1,0 +1,92 @@
+let rec insert l i =
+	match l with 
+	| [] -> [i]
+	| h::t -> if i <= h then i::(h::t)
+			  else h::(insert t i);;
+
+insert [1;2;3;4] 0;;
+insert [1;2;3;4] 6;;
+insert [1;2;4] 3;;
+
+
+let insertion_sort = 
+	fun l i -> (let helper (res, tmp) b = 
+				 if tmp <= b then (res@[tmp], b) else (res@[b], tmp) in
+			   let res, tmp = List.fold_left helper ([], i) l in
+				 res@[tmp]);;
+
+		
+insertion_sort [1;2;3;4] 0;;
+insertion_sort [1;2;3;4] 6;;
+insertion_sort [1;2;4] 3;;
+
+type expr = |Var of string
+| Const of int
+| Plus of expr*expr;;
+let rec simpl e = 
+	match e with 
+	| Plus(e1, e2) -> 
+		let e1' = simpl e1 in 
+		let e2' = simpl e2 in
+		(match (e1', e2') with
+		| (Const a, Const b) -> Const(a + b)
+		| _ -> Plus(e1', e2'))
+	| _ -> e;;
+	
+simpl (Plus (Plus (Const 20, Const 10), Var "a"));;
+
+def in_range(x, r):
+	class deco:
+		def __init__(self, f):
+			self.f = f
+		def __call__(self, *args, **kwargs):
+			if len(args) > x >= 0:
+				if args[x] < r[0]:
+					raise Exception("%dth arg %d too small" % (x, args[x]))
+				if args[x] > r[1]:
+					raise Exception("%dth arg %d too big" % (x, args[x]))
+			res = self.f(*args, **kwargs)
+			if x == -1:
+				if res < r[0]:
+					raise Exception("%dth arg %d too small" % (x, res))
+				if res > r[1]:
+					raise Exception("%dth arg %d too big" % (x, res))
+			return res
+	return deco
+	
+
+let rec tree_zip t1 t2 = 
+match (t1, t2) with
+| Node(a1, l1), Node(a2, l2)->
+	let helper (x1, x2) = tree_zip x1 x2 in
+	Node((a1, a2), List.map helper (zip l1 l2))
+| Empty, Empty -> Empty
+| _, _ -> raise Mismatch;;
+
+	
+def print_some(l):
+	class deco:
+		def __init__(self, f):
+			self.f = f
+		def __call__(self, *args):
+			for i in l:
+				if -1< i < len(args):
+					print("Arg " + str(i) + ": " + str(args[i]))
+			v = self.f(*args)
+			if -1 in l:
+				print("Return: " + str(v))
+			return v
+	return deco
+	
+	
+	
+
+
+
+
+
+	
+	
+	
+	
+	
