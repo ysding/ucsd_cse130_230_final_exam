@@ -1,0 +1,133 @@
+(*  1.a  typo emlt elmt. *)
+let sum_matrix m = 
+	let helper base elmt = base + elmt in
+	let helper2 base elmt = List.fold_left helper base elmt in 
+	List.fold_left helper2 0 m;;
+
+let m = [[1;2;3]; [4;5;6]];;
+sum_matrix m;;
+
+%% 2.a prolog
+remove_all(_, [], []).
+remove_all(A, [A | T], R) :- remove_all(A, T, R).
+remove_all(A, [B | T], [B | R]) :- not(A=B), remove_all(A, T, R). 
+
+%% test case.
+remove_all(10, [1,2,5,1,10,10,1,2,10,4], R).
+
+%% 2.b 
+remove_first(_, [], []).
+remove_first(A, [A | T], T).
+remove_first(A, [B | T], [B | R]) :- not(A=B), remove_first(A, T, R).
+
+%% test case:
+remove_first(10,[1,10,3,2,1,10], R).
+
+%% 2.c
+prefix([], _).
+prefix([A | T], [A | Y]) :- prefix(T, Y).
+
+%% test case.
+prefix(X, [1,2,3,4,5]).
+
+%% 2.d
+segment(X, Y) :- prefix(X, Y).
+segment([A | T], [_ | R]) :- segment([A | T], R). 
+%% not need to compare not(A=_).
+%% test case:
+segment([X, Y], [1,2,3,4]).
+
+
+# 3 python3
+def transpose(m):
+	height = len(m)
+	width = len(m[0])
+	return [[ m[x][y] for x in range(height)] for y in range(width)]
+
+A = [[1, 2, 3], [4, 5, 6]]
+transpose(A)
+
+# 4
+def access(g, x, y):
+	try: return g[y][x]
+	except: return 0
+
+def count_live_neighbours(g, x ,y):
+	live = 0
+	for x_delta in [-1, 0, 1]:
+		for y_delta in [-1, 0, 1]:
+			if y_delta != 0 or x_delta != 0:
+				live += access(g, x+x_delta, y+y_delta)
+	return live
+
+g = [[0, 0, 0, 0, 0],
+	 [0, 0, 0, 0, 0],
+	 [0, 1, 1, 1, 0],
+	 [0, 0, 0, 0, 0],
+	 [0, 0, 1, 0, 1] 
+	 ]
+count_live_neighbours(g, 1, 2)
+# should be 1
+
+# 4.b uncheck
+def new_val(g, x, y):
+	nei = count_live_neighbours(g, x, y)
+	if access(g, x, y):
+		# live cell with fewer than two nei or more than 3.
+		if nei < 2 or nei > 3: 
+			return 0
+		return 1
+	else:
+		# a dead cell with 3 nei becomes a live cell.
+		return int(nei == 3)
+
+# 4.c
+def step(g):
+	height = len(g)
+	width = len(g[0])
+	return [ [new_val(g, x, y) for x in range(width)] for y in range(height)]
+
+# 5.a
+# a decorator similar to map
+def lift_1(f):
+	def decorated(x):
+		return [f(v) for v in x]
+	return decorated
+
+@lift_1
+def sqr(x): return x*x
+
+
+def lift_2(f):
+	def decorated(x, y):
+		return [f(v0, v1)  for v0, v1 in zip(x, y)]
+	return decorated
+
+@lift_2
+def mul(x, y): return x * y
+mul([10, 11], [2, 3])
+
+
+@lift_2
+@lift_2
+def plus(x, y): return x + y
+# the plus with only one lift_2 will take two 'a list and return one 'a list
+# and apply plus to corresponding v in these two list.
+# the plus with two lift_2 will take two 'a list list and return one 'a list list.
+# and apply plus to corresponding v in these two list.
+# or we can say, it will merge two matrix with function plus.
+# example plus(g, g)
+
+
+# 5.d  transpose(args) can be replaced with zip(*args) 
+# be careful, we define another zip... which may replace the build-in zip.
+def lift(f):
+	def decorated(*args):
+		return [f(*values) for values in transpose(args)]
+	return decorated
+
+@lift
+def avg(a, b, c, d): return (a+b+c+d) / 4.0
+avg([1, 2], [5, 6], [10, 12], [4, 8])
+
+
